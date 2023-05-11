@@ -232,7 +232,7 @@ class Music(commands.Cog):
 
     async def skippable_wait(self, duration, skip_when_everyone_answered):
         counter = 0
-        while not self.skip and counter < duration and not (skip_when_everyone_answered and len(self.teams) == len(self.current_answers.keys())):
+        while not self.skip and counter < duration and not (skip_when_everyone_answered and (len(self.teams) == len(self.current_answers.keys()))):
             await asyncio.sleep(1)
             counter += 1
         
@@ -303,7 +303,7 @@ class Music(commands.Cog):
                     tg.create_task(after_seconds_left(self, ctx, duration - 30, content=all_strings.THIRTY_SECONDS_LEFT, only_still_playing=True, skippable=True))
                 if duration >= 10:
                     tg.create_task(after_seconds_left(self, ctx, duration - 10, content=all_strings.TEN_SECONDS_LEFT, only_still_playing=True, skippable=True))
-                tg.create_task(after_seconds_left(self, ctx, duration, content=all_strings.build_times_up_message(track['answer'], track['url'], everyone_answered=(len(self.teams) == len(self.current_answers.keys())))))
+                tg.create_task(after_seconds_left(self, ctx, duration, content=all_strings.build_times_up_message(track['answer'], track['url'])))
                 tg.create_task(after_seconds_left(self, ctx, duration, skip_when_everyone_answered=False))
         
             if ctx.voice_client.is_playing():
@@ -312,8 +312,9 @@ class Music(commands.Cog):
                 await self.send_all_teams(ctx, all_strings.build_everyone_guesses_message(self.current_answers))
             self.current_track = None
             self.skip = False
-            times_up_sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/time.wav'))
-            ctx.voice_client.play(times_up_sound, after=lambda e: print(f'Player error: {e}') if e else None)
+            if len(self.teams) != len(self.current_answers.items()):
+                times_up_sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/time.wav'))
+                ctx.voice_client.play(times_up_sound, after=lambda e: print(f'Player error: {e}') if e else None)
 
             await asyncio.sleep(10)
 
@@ -359,8 +360,13 @@ class Music(commands.Cog):
         # Winning team consumed their voting rights, time to earn them again
         self.vote_privilege = None
 
-        # Who's the winner
-        winner_emoji = reactions_count.most_common(1)[0][0]
+        # Who's the winner (random when draw)
+        winner_count = reactions_count.most_common(1)[0][1]
+        winner_emojis = []
+        for emoji, count in dict(reactions_count).items():
+            if count == winner_count:
+                winner_emojis.append(emoji)
+        winner_emoji = random.choice(winner_emojis)
         winner_position = all_strings.VOTE_EMOJIS.index(winner_emoji)
         return categories[winner_position]
 

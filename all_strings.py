@@ -38,8 +38,8 @@ TEN_SECONDS_LEFT = ':clock3: Only 10 seconds left!'
 def build_times_left_message(time_left):
     return f':clock3: You have {time_left} seconds!'
 
-def build_times_up_message(answer, url, everyone_answered):
-    return f"""{":alarm_clock: Time's up! " if not everyone_answered else ""}The answer was **{answer}**:
+def build_times_up_message(answer, url):
+    return f""":alarm_clock: Time's up! The answer was **{answer}**:
 {url}"""
 
 def build_guessed_right_message(team):
