@@ -103,7 +103,7 @@ class Music(commands.Cog):
             return await ctx.voice_client.move_to(channel)
 
         await channel.connect()
-        await ctx.send("")
+        await ctx.send(all_strings.GENERAL_WELCOME)
 
     @commands.command()
     @commands.has_role("quizmaster")
@@ -230,9 +230,9 @@ class Music(commands.Cog):
                 await team_channel.edit(overwrites=permission_overwrites)
             
 
-    async def skippable_wait(self, duration):
+    async def skippable_wait(self, duration, skip_when_everyone_answered):
         counter = 0
-        while not self.skip and counter < duration:
+        while not self.skip and counter < duration and not (skip_when_everyone_answered and len(self.teams) == len(self.current_answers.keys())):
             await asyncio.sleep(1)
             counter += 1
         
@@ -289,9 +289,9 @@ class Music(commands.Cog):
                                   ctx.voice_client.play(track['player'], after=lambda e: print(f'Player error: {e}') if e else None))
             duration = DEFAULT_DURATION if not track['duration_seconds'] else int(track['duration_seconds'])
 
-            async def after_seconds_left(self, ctx, after, content, only_still_playing = False, skippable = False):
-                await self.skippable_wait(after)
-                if not (skippable and self.skip):
+            async def after_seconds_left(self, ctx, after, content = None, only_still_playing = False, skippable = False, skip_when_everyone_answered = True):
+                await self.skippable_wait(after, skip_when_everyone_answered)
+                if not (skippable and self.skip) and content:
                     if only_still_playing is True:
                         await self.send_still_playing_teams(ctx, content)
                     else:
@@ -300,10 +300,11 @@ class Music(commands.Cog):
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(self.send_all_teams(ctx, all_strings.build_times_left_message(duration)))
                 if duration >= 30:
-                    tg.create_task(after_seconds_left(self, ctx, duration - 30, all_strings.THIRTY_SECONDS_LEFT, only_still_playing=True, skippable=True))
+                    tg.create_task(after_seconds_left(self, ctx, duration - 30, content=all_strings.THIRTY_SECONDS_LEFT, only_still_playing=True, skippable=True))
                 if duration >= 10:
-                    tg.create_task(after_seconds_left(self, ctx, duration - 10, all_strings.TEN_SECONDS_LEFT, only_still_playing=True, skippable=True))
-                tg.create_task(after_seconds_left(self, ctx, duration, all_strings.build_times_up_message(track['answer'], track['url'])))
+                    tg.create_task(after_seconds_left(self, ctx, duration - 10, content=all_strings.TEN_SECONDS_LEFT, only_still_playing=True, skippable=True))
+                tg.create_task(after_seconds_left(self, ctx, duration, content=all_strings.build_times_up_message(track['answer'], track['url'], everyone_answered=(len(self.teams) == len(self.current_answers.keys())))))
+                tg.create_task(after_seconds_left(self, ctx, duration, skip_when_everyone_answered=False))
         
             if ctx.voice_client.is_playing():
                 ctx.voice_client.stop()
@@ -369,16 +370,16 @@ class Music(commands.Cog):
         return random.sample(list(remaining_categories), n)
 
     async def send_all_teams(self, ctx, content):
-        async def send_team(self, ctx, team, content):
+        async def send_team(ctx, team, content):
             team_channel = discord.utils.get(ctx.guild.channels, name=team['name'])
             return await team_channel.send(content)
         
         all_results = []
         async with asyncio.TaskGroup() as tg:
             for team in self.teams:
-                result = tg.create_task(send_team(self, ctx, team, content))
+                result = tg.create_task(send_team(ctx, team, content))
                 all_results.append(result)
-        all_messages = map(lambda r: r.result(), all_results)
+        all_messages = list(map(lambda r: r.result(), all_results))
         return all_messages
     
     async def send_still_playing_teams(self, ctx, content):

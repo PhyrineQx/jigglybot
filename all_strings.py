@@ -1,6 +1,12 @@
 LOAD_SUCCESS = """:white_check_mark: **All songs have been successfully downloaded!** 
 As the **quizmaster**, you can use the `!begin` command (on the server) to start the game!"""
 
+GENERAL_WELCOME = """:musical_note: Welcome to the blindtest quiz!
+First, **create or join a team** with the `!team team_name` command.
+Then wait for the game to begin.
+
+The quizmaster can send me the CSV list as an attachment in a DM message with the command `!loadcsv`."""
+
 TEAM_WELCOME = """The quiz is about to begin!
 
 :clipboard: **Rules**
@@ -32,8 +38,8 @@ TEN_SECONDS_LEFT = ':clock3: Only 10 seconds left!'
 def build_times_left_message(time_left):
     return f':clock3: You have {time_left} seconds!'
 
-def build_times_up_message(answer, url):
-    return f""":alarm_clock: Time's up! The answer was **{answer}**:
+def build_times_up_message(answer, url, everyone_answered):
+    return f"""{":alarm_clock: Time's up! " if not everyone_answered else ""}The answer was **{answer}**:
 {url}"""
 
 def build_guessed_right_message(team):
