@@ -318,6 +318,8 @@ class Music(commands.Cog):
             self.table.remove(track)
             self.current_answers = {}
 
+        finished_sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/congrats.wav'))
+        ctx.voice_client.play(finished_sound, after=lambda e: print(f'Player error: {e}') if e else None)
         await self.send_all_teams(ctx, all_strings.GAME_FINISHED)
         self.game_in_session = False
 
