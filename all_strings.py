@@ -1,6 +1,5 @@
-LOAD_SUCCESS = """:white_check_mark: **All songs have been successfully downloaded!**
-Create and choose your teams with the `!team` command. 
-Quizmaster can use the `!begin` command to start the game!"""
+LOAD_SUCCESS = """:white_check_mark: **All songs have been successfully downloaded!** 
+As the **quizmaster**, you can use the `!begin` command (on the server) to start the game!"""
 
 TEAM_WELCOME = """The quiz is about to begin!
 
