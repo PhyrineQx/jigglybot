@@ -332,12 +332,15 @@ class Music(commands.Cog):
     async def vote_for_category(self, ctx):
         categories = self.select_categories(CATEGORY_NUMBER_FOR_VOTE)
 
-        # Send messages to winning team or every team
-        vote_messages = await self.send_all_teams(ctx, all_strings.build_vote_message(categories)) if self.vote_privilege is None else [await self.send_team(ctx, self.vote_privilege, all_strings.build_vote_message(categories))]
-        for message in vote_messages:
+        async def add_reactions(message, categories):
             for i in range(1, len(categories) + 1):
                 await message.add_reaction(all_strings.VOTE_EMOJIS[i-1])
 
+        # Send messages to winning team or every team
+        vote_messages = await self.send_all_teams(ctx, all_strings.build_vote_message(categories)) if self.vote_privilege is None else [await self.send_team(ctx, self.vote_privilege, all_strings.build_vote_message(categories))]
+        async with asyncio.TaskGroup() as tg:
+            for message in vote_messages:
+                tg.create_task(add_reactions(message, categories))
         await asyncio.sleep(10)
 
         # Gather all reactions
@@ -363,11 +366,17 @@ class Music(commands.Cog):
         return random.sample(list(remaining_categories), n)
 
     async def send_all_teams(self, ctx, content):
-        all_messages = []
-        for team in self.teams:
+        async def send_team(self, ctx, team, content):
             team_channel = discord.utils.get(ctx.guild.channels, name=team['name'])
             message = await team_channel.send(content)
             all_messages.append(message)
+        
+        all_results = []
+        async with asyncio.TaskGroup() as tg:
+            for team in self.teams:
+                result = tg.create_task(send_team(self, ctx, team, content))
+                all_results.append(result)
+        all_messages = map(lambda r: r.result(), all_results)
         return all_messages
     
     async def send_still_playing_teams(self, ctx, content):
