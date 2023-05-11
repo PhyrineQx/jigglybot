@@ -409,6 +409,11 @@ class Music(commands.Cog):
             if ctx.author in team['members']:
                 answering_team = team['name']
         
+        # If team is none, back off
+        if not answering_team:
+            await ctx.send(f"You don't even have a team, bolosse!")
+            return
+
         # If team already answered, tell them so
         if answering_team in self.current_answers.keys():
             await ctx.send(f'Your team already answered. One guess only!')
