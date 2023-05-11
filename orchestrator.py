@@ -103,6 +103,7 @@ class Music(commands.Cog):
             return await ctx.voice_client.move_to(channel)
 
         await channel.connect()
+        await ctx.send("")
 
     @commands.command()
     @commands.has_role("quizmaster")
@@ -370,8 +371,7 @@ class Music(commands.Cog):
     async def send_all_teams(self, ctx, content):
         async def send_team(self, ctx, team, content):
             team_channel = discord.utils.get(ctx.guild.channels, name=team['name'])
-            message = await team_channel.send(content)
-            all_messages.append(message)
+            return await team_channel.send(content)
         
         all_results = []
         async with asyncio.TaskGroup() as tg:
