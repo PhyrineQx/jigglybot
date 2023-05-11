@@ -314,7 +314,6 @@ class Music(commands.Cog):
             self.skip = False
             if len(self.teams) != len(self.current_answers.items()):
                 times_up_sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/time.wav'))
-                times_up_sound.volume = 30
                 ctx.voice_client.play(times_up_sound, after=lambda e: print(f'Player error: {e}') if e else None)
 
             await asyncio.sleep(10)
@@ -323,7 +322,6 @@ class Music(commands.Cog):
             self.current_answers = {}
 
         finished_sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio('assets/congrats.wav'))
-        finished_sound.volume = 30
         ctx.voice_client.play(finished_sound, after=lambda e: print(f'Player error: {e}') if e else None)
         await self.send_all_teams(ctx, all_strings.GAME_FINISHED)
         self.game_in_session = False
