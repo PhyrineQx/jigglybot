@@ -76,11 +76,13 @@ class Downloader():
         self.table = table
 
     @staticmethod
-    async def pre_download_table(table):
-        for track in table:
+    async def pre_download_table(ctx, table):
+        for idx, track in enumerate(table):
             print(f"Downloading {track['url']}")
             track['player'] = await YTDLSource.from_url(track['url'])
             print(f"Download OK")
+            if (idx+1) % 5 == 0:
+                await ctx.send(f"Downloaded {idx+1}/{len(table)} tracks.")
 
         return table
 
@@ -167,7 +169,7 @@ class Music(commands.Cog):
         
         self.table = table
         try:
-            await Downloader.pre_download_table(self.table)
+            await Downloader.pre_download_table(ctx, self.table)
         except DownloadError as error:
             await ctx.send(error)
             return
