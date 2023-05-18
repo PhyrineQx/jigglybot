@@ -11,6 +11,7 @@ import csv
 from io import StringIO
 from unidecode import unidecode
 from collections import Counter
+from yt_dlp import DownloadError
 
 from discord.ext import commands
 
@@ -165,7 +166,11 @@ class Music(commands.Cog):
             return
         
         self.table = table
-        await Downloader.pre_download_table(self.table)
+        try:
+            await Downloader.pre_download_table(self.table)
+        except DownloadError as error:
+            await ctx.send(error)
+            return
         await ctx.send(all_strings.LOAD_SUCCESS)
 
     @commands.command()
