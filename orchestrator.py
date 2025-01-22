@@ -462,13 +462,21 @@ class Music(commands.Cog):
 
     @commands.command()
     @commands.has_role("quizmaster")
-    async def vote(self, ctx, team):
-        if team not in map(lambda t: t['name'], self.teams):
+    async def vote(self, ctx, *args):
+        team_name = normalize_team_name(' '.join(args))
+
+        if len(team_name) == 0:
+            return
+        
+        if len(team_name) > 99:
+            return
+        
+        if team_name not in map(lambda t: t['name'], self.teams):
             await ctx.send(all_strings.TEAM_DOES_NOT_EXIST)
             return
 
-        self.vote_privilege = team
-        await self.send_all_teams(ctx, all_strings.build_next_voting_team_message(team))
+        self.vote_privilege = team_name
+        await self.send_all_teams(ctx, all_strings.build_next_voting_team_message(team_name))
 
     @commands.command()
     @commands.has_role("quizmaster")
