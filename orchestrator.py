@@ -180,6 +180,13 @@ class Music(commands.Cog):
         await ctx.send(all_strings.LOAD_SUCCESS)
 
     @commands.command()
+    async def roster(self, ctx):
+        if len(self.teams) == 0:
+            await ctx.send(all_strings.NO_TEAMS_YET)
+        
+        await ctx.send(all_strings.build_roster_message(self.teams))
+
+    @commands.command()
     async def team(self, ctx, *args):
         """Create a team and/or joins the team"""
         

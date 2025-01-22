@@ -20,6 +20,16 @@ TEAM_WELCOME = """The quiz is about to begin!
 
 VOTE_EMOJIS = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '0️⃣']
 
+NO_TEAMS_YET = """:question: There are no teams currently."""
+
+def build_roster_message(teams):
+    message = """:bust_in_silhouette: List of teams and their mighty contestants so far:"""
+    for team in teams:
+        message += f"\n**{team['name']}**"
+        message += "\n> "
+        message += ', '.join(map(lambda x: x.name, team['members']))
+    return message
+
 def build_vote_message(categories):
     message = """:ballot_box: **Choose a category**
 React to this message to cast your vote for the next question's category!
